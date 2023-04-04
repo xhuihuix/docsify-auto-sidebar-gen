@@ -17,7 +17,7 @@ def read_config():
     global base_dir, show_file, start_with, ignore_file_name, ReadmeFile, _sidebarFile
 
     cf = ConfigParser()
-    cf.read("config.ini")
+    cf.read("config.ini", encoding='utf-8')
     base_dir = cf.get("config", "base_dir")
     start_with = cf.get("config", "ignore_start_with").split("|")
     show_file = cf.get("config", "show_file").split('|')
@@ -111,7 +111,6 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
         f.write(subdir_structure)
     # 返回当前目录的结构字符串
     return back_struct
-
 
 read_config()
 save_structure(base_dir, base_dir, 0)
