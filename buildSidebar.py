@@ -2,20 +2,17 @@ from configparser import ConfigParser
 from os.path import splitext, basename, join, isdir, relpath, abspath
 from os import listdir
 
-# 定义要处理的根目录路径
+
 base_dir = None
 start_with = None
 show_file = None
 ignore_file_name = None
 
-# ReadmeFile = "README.md"
-# _sidebarFile = "_sidebar.md"
 out_file_list = []
 create_depth = -1
 
 
 def read_config():
-    #  实例化configParser对象
     global base_dir, show_file, start_with, ignore_file_name, ReadmeFile, _sidebarFile, out_file_list, create_depth
 
     cf = ConfigParser()
@@ -25,7 +22,6 @@ def read_config():
     show_file = cf.get("config", "show_file").split('|')
     ignore_file_name = cf.get("config", "ignore_file_name").split("|")
 
-    # 输出路径文件
     out_file_list = cf.get("outFile", "eachFile").split("|")
     create_depth = int(cf.get("outFile", "create_depth"))
 
@@ -36,7 +32,7 @@ def check_file_extension(file_path):
     :param file_path: 文件路径
     :return: 如果文件后缀为指定的后缀，返回True；否则返回False
     """
-    file_extension = splitext(file_path)[1]  # 获取文件后缀
+    file_extension = splitext(file_path)[1]
     if file_extension in show_file:
         return True
     else:
@@ -63,7 +59,6 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
     :param base_dir: 用来获得root_dir对base_dir的相对路径
     :param depth: 递归深度，文件夹深度
     """
-    # 遍历根目录下的所有文件和子目录
     root = root_dir
     dirs = []
     files = []
@@ -72,47 +67,42 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
             dirs.append(item)
         else:
             files.append(item)
-    # 构建当前目录的结构字符串
     subdir_structure = ''
-    subdir_name = basename(root)  # 获取当前目录的名字
+    subdir_name = basename(root)
 
     if depth != 0:
         if create_depth == 0:
-            subdir_structure += "- " + subdir_name + '\n'  # 当前路径，第一行文字
+            subdir_structure += "- " + subdir_name + '\n'
         else:
-            subdir_structure += "- [" + subdir_name + "](" + relpath(root, base_dir) + '\)\n'  # 当前路径，第一行文字
+            subdir_structure += "- [" + subdir_name + "](" + relpath(root, base_dir) + '\)\n'
     else:
         if create_depth == 0:
-            subdir_structure += "- " + "首页" + '\n'  # 当前路径，第一行文字
+            subdir_structure += "- " + "首页" + '\n'
         else:
-            subdir_structure += "- [" + "首页" + "](" + relpath(root, base_dir) + '\)\n'  # 当前路径，第一行文字
+            subdir_structure += "- [" + "首页" + "](" + relpath(root, base_dir) + '\)\n'
 
     for file in files:
-        # 将当前目录下的所有文件添加到目录结构字符串中
         if check_file_name_satified(join(root, file)):
             if check_file_extension(file):
                 subdir_structure += "  " + "- [" + file + "](" + relpath(join(root, file),
-                                                                         base_dir) + ')\n'  # 该目录下所有文件信息，格式：[文件名](文件相对路径)
-                # subdir_structure += "  " + "- " + file + '\n'  # 该目录下所有文件信息，格式：[文件名](文件相对路径)
+                                                                         base_dir) + ')\n'
 
-    # 如果当前目录中有子目录，则递归遍历所有子目录
     for subdir in dirs:
         subdir_path = join(root, subdir)
         if check_file_name_satified(subdir_path):
             next_struct = save_structure(subdir_path, base_dir, depth + 1)
             next_struct = next_struct[:-1] if next_struct.endswith("\n") else next_struct
             next_struct = next_struct.replace("\n", "\n  ") + "\n"
-            subdir_structure += "  " + next_struct  # 递归调用,构造md语法
+            subdir_structure += "  " + next_struct
 
     back_struct = subdir_structure
     if depth == 1:
-        subdir_structure = "- [" + "返回首页" + "](" + "" + '\?id=main)\n' + subdir_structure  # 当前路径，第一行文字
+        subdir_structure = "- [" + "返回首页" + "](" + "" + '\?id=main)\n' + subdir_structure
     elif depth != 0:
         abs_pre_path = abspath(join(root, ".."))
         rel_pre_path = relpath(abs_pre_path, base_dir)
-        subdir_structure = "- [" + "返回上一级" + "](" + rel_pre_path + '\)\n' + subdir_structure  # 当前路径，第一行文字
+        subdir_structure = "- [" + "返回上一级" + "](" + rel_pre_path + '\)\n' + subdir_structure
 
-    # 将目录结构字符串写入名为REAMD.md _sidebar.md的文件中
     subdir_structure = subdir_structure.replace('\\', '/')
     print("%s : finished" % root_dir)
     if create_depth == -1:
@@ -124,7 +114,6 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
             for file_name in out_file_list:
                 with open(join(root, file_name), 'w', encoding="utf-8") as f:
                     f.write(subdir_structure)
-    # 返回当前目录的结构字符串
     return back_struct
 
 
