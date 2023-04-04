@@ -8,13 +8,15 @@ start_with = None
 show_file = None
 ignore_file_name = None
 
-ReadmeFile = "README.md"
-_sidebarFile = "_sidebar.md"
+# ReadmeFile = "README.md"
+# _sidebarFile = "_sidebar.md"
+out_file_list = []
+create_depth = -1
 
 
 def read_config():
     #  实例化configParser对象
-    global base_dir, show_file, start_with, ignore_file_name, ReadmeFile, _sidebarFile
+    global base_dir, show_file, start_with, ignore_file_name, ReadmeFile, _sidebarFile, out_file_list, create_depth
 
     cf = ConfigParser()
     cf.read("config.ini", encoding='utf-8')
@@ -24,8 +26,8 @@ def read_config():
     ignore_file_name = cf.get("config", "ignore_file_name").split("|")
 
     # 输出路径文件
-    ReadmeFile = cf.get("outFile", "ReadmeFile")
-    _sidebarFile = cf.get("outFile", "_sidebarFile")
+    out_file_list = cf.get("outFile", "eachFile").split("|")
+    create_depth = int(cf.get("outFile", "create_depth"))
 
 
 def check_file_extension(file_path):
@@ -75,9 +77,15 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
     subdir_name = basename(root)  # 获取当前目录的名字
 
     if depth != 0:
-        subdir_structure += "- [" + subdir_name + "](" + relpath(root, base_dir) + '\)\n'  # 当前路径，第一行文字
+        if create_depth == 0:
+            subdir_structure += "- " + subdir_name + '\n'  # 当前路径，第一行文字
+        else:
+            subdir_structure += "- [" + subdir_name + "](" + relpath(root, base_dir) + '\)\n'  # 当前路径，第一行文字
     else:
-        subdir_structure += "- [" + "首页" + "](" + relpath(root, base_dir) + '\)\n'  # 当前路径，第一行文字
+        if create_depth == 0:
+            subdir_structure += "- " + "首页" + '\n'  # 当前路径，第一行文字
+        else:
+            subdir_structure += "- [" + "首页" + "](" + relpath(root, base_dir) + '\)\n'  # 当前路径，第一行文字
 
     for file in files:
         # 将当前目录下的所有文件添加到目录结构字符串中
@@ -85,6 +93,7 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
             if check_file_extension(file):
                 subdir_structure += "  " + "- [" + file + "](" + relpath(join(root, file),
                                                                          base_dir) + ')\n'  # 该目录下所有文件信息，格式：[文件名](文件相对路径)
+                # subdir_structure += "  " + "- " + file + '\n'  # 该目录下所有文件信息，格式：[文件名](文件相对路径)
 
     # 如果当前目录中有子目录，则递归遍历所有子目录
     for subdir in dirs:
@@ -105,12 +114,20 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
 
     # 将目录结构字符串写入名为REAMD.md _sidebar.md的文件中
     subdir_structure = subdir_structure.replace('\\', '/')
-    with open(join(root, ReadmeFile), 'w', encoding="utf-8") as f:
-        f.write(subdir_structure)
-    with open(join(root, _sidebarFile), 'w', encoding="utf-8") as f:
-        f.write(subdir_structure)
+
+    if create_depth == -1:
+        for file_name in out_file_list:
+            with open(join(root, file_name), 'w', encoding="utf-8") as f:
+                f.write(subdir_structure)
+    else:
+        if depth == 0 :
+            for file_name in out_file_list:
+                with open(join(root, file_name), 'w', encoding="utf-8") as f:
+                    f.write(subdir_structure)
     # 返回当前目录的结构字符串
     return back_struct
 
-read_config()
-save_structure(base_dir, base_dir, 0)
+
+if __name__ == "__main__":
+    read_config()
+    save_structure(base_dir, base_dir, 0)
