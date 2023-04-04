@@ -114,7 +114,7 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
 
     # 将目录结构字符串写入名为REAMD.md _sidebar.md的文件中
     subdir_structure = subdir_structure.replace('\\', '/')
-
+    print("%s : finished" % root_dir)
     if create_depth == -1:
         for file_name in out_file_list:
             with open(join(root, file_name), 'w', encoding="utf-8") as f:
@@ -131,3 +131,4 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
 if __name__ == "__main__":
     read_config()
     save_structure(base_dir, base_dir, 0)
+    input()
