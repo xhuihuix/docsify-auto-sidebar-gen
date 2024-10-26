@@ -84,8 +84,9 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
     for file in files:
         if check_file_name_satified(join(root, file)):
             if check_file_extension(file):
-                subdir_structure += "  " + "- [" + file + "](" + relpath(join(root, file),
-                                                                         base_dir) + ')\n'
+                # subdir_structure += "  " + "- [" + file + "](" + relpath(join(root, file), base_dir) + ')\n'
+                subdir_structure += "  " + "- [" + file + "](" + replace_space_with_percent_20(
+                    relpath(join(root, file), base_dir)) + ')\n'
 
     for subdir in dirs:
         subdir_path = join(root, subdir)
@@ -116,6 +117,13 @@ def save_structure(root_dir, base_dir=base_dir, depth=0):
                     f.write(subdir_structure)
     return back_struct
 
+# 替换空格为%20
+def replace_space_with_percent_20(path):
+    if ' ' in path:
+        new_path = path.replace(' ', '%20')
+        return new_path
+    else:
+        return path
 
 if __name__ == "__main__":
     read_config()
